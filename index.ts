@@ -141,7 +141,11 @@ function wrapMatcher(router: Router | IRoute, routerMatcher: IRouterMatcher<Rout
 function wrapHandler(handler: RequestHandler, sender: AsyncRouterParamHandler): RequestHandler {
     return function(req, res, next): void {
         next = once(next);
-        toCallback(handler.call(this, req, res, next), next, result => { sender(req, res, result); });
+        toCallback(handler.call(this, req, res, next), next, result => {
+            if (!res.headersSent) {
+                sender(req, res, result);
+            }
+        });
     };
 }
 

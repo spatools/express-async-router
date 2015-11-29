@@ -89,7 +89,6 @@ router.get("/", function () {
 });
 ```
 
-
 ### send
 
 ## Promise handling

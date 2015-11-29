@@ -1,6 +1,6 @@
 {
   "name": "express-async-router",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Express Async Router - An Express Router wrapper which automatically manage Promise.",
   "main": "index.js",
   "license": "MIT",
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/spatools/express-async-router.git"
+    "url": "https://github.com/spatools/express-async-router.git"
   },
   "bugs": {
     "url": "https://github.com/spatools/express-async-router/issues"

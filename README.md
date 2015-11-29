@@ -111,7 +111,7 @@ router.param("test", function (req, res, param) {
 });
 ```
 
-### [method](name: string, handler: (req, res) => Thenable)
+### _[method]_(name: string, handler: (req, res) => Thenable)
 
 A `Router[method]` wrapper which automatically calls `next` function when returned `Promise` resolves.
 If returned `Promise` rejects, rejected `Error` is transfered to `next` function.

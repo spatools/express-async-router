@@ -1,0 +1,46 @@
+{
+  "name": "express-async-router",
+  "version": "0.1.1",
+  "description": "Express Async Router - An Express Router wrapper which automatically manage Promise.",
+  "main": "index.js",
+  "license": "MIT",
+  "homepage": "https://github.com/spatools/express-async-router#readme",
+  "author": {
+    "name": "SPATools",
+    "url": "https://github.com/spatools",
+    "email": "spa@touchify.co"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spatools/express-async-router.git"
+  },
+  "bugs": {
+    "url": "https://github.com/spatools/express-async-router/issues"
+  },
+  "keywords": [
+    "express",
+    "async",
+    "router",
+    "promise",
+    "es6"
+  ],
+  "scripts": {
+    "test": "grunt"
+  },
+  "dependencies": {
+    "express": "^4.13.3"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-build-control": "^0.6.1",
+    "grunt-contrib-clean": "^0.7.0",
+    "grunt-contrib-copy": "^0.8.2",
+    "grunt-contrib-jshint": "^0.11.3",
+    "grunt-ts": "^5.2.0",
+    "grunt-tslint": "^3.0.0",
+    "promizr": "^0.2.5",
+    "time-grunt": "^1.2.2",
+    "tslint": "^3.0.0",
+    "typescript": "^1.6.2"
+  }
+}

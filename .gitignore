@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Typings
+typings/
+
+# Build results
+[T|t]emp/
+[B|b]uild/
+[B|b]in/
+[O|o]bj/
+[D|d]ist/
+
+# Development Javascript
+*.js
+*.js.map
+!Gruntfile.js
+
+# Visual Studio
+.vs/
+*.psess
+*.vsp
+*.vspx
+*.dat
+*.tmp
+*.suo
+*.user
+*.sln.docstates
+
+# Logs
+*.log
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Mac desktop service store files
+.DS_Store

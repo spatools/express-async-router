@@ -1,7 +1,7 @@
 {
   "name": "express-async-router",
   "version": "0.1.0",
-  "description": "Express Async Router helps the use of promises in express",
+  "description": "Express Async Router - An Express Router wrapper which automatically manage Promise.",
   "main": "index.js",
   "license": "MIT",
   "homepage": "https://github.com/spatools/express-async-router#readme",
@@ -25,7 +25,7 @@
     "es6"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "grunt"
   },
   "dependencies": {
     "express": "^4.13.3"

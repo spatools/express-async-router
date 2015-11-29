@@ -154,6 +154,24 @@ module.exports = function (grunt) {
     
     //#endregion
     
+    //#region Setup
+    
+    grunt.registerTask("setup", function () {
+        var os = require("os"),
+            tsd = os.platform() == "win32" ? "tsd.cmd" : "tsd",
+            result = require("child_process").spawnSync(tsd, ["reinstall", "-overwrite"]);
+            
+        if (result.error) {
+            grunt.log.error("An error occured during grunt setup, are you sure tsd is installed ?");
+            grunt.fail.fatal(result.error);
+        }
+            
+        grunt.verbose.writeln(result.output);
+        grunt.log.ok("Setup successfully applied!");
+    });
+    
+    //#endregion
+    
     //#region Aliases
     
     grunt.initConfig(config);
@@ -168,9 +186,9 @@ module.exports = function (grunt) {
     grunt.registerTask("src", ["clean:src", "tslint:src", "ts:src", "jshint:src"]);
     grunt.registerTask("build", ["clean:dist", "tslint:src", "ts:dist", "copy:dist", "jshint:dist"]);
     grunt.registerTask("decla", ["clean:temp", "ts:decla", "fix-declaration"]);
-    grunt.registerTask("publish", ["build", "buildcontrol"]);
     
     grunt.registerTask("default", ["build", "decla"]);
+    grunt.registerTask("publish", ["default", "buildcontrol"]);
 
     //#endregion
 };

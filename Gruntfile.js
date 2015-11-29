@@ -102,6 +102,7 @@ module.exports = function (grunt) {
     config.buildcontrol = {
         options: {
             dir: "<%= paths.build %>",
+            tag: "<%= pkg.version %>",
             commit: true,
             push: true,
             config: {

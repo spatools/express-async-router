@@ -136,19 +136,19 @@ module.exports = function (grunt) {
     //#region Fix Declaration
     
     grunt.registerTask("fix-declaration", function() {
-        var EOL = require("os").EOL,
+        var /*EOL = require("os").EOL,*/
             source = config.paths.temp + "/index.d.ts",
             dest = config.paths.build + "/index.d.ts",
             content = grunt.file.read(source);
             
         content = content.replace(/\/\/\/\s*<reference path="..\/_references.d.ts" \/>\r?\n/, "");
-        content = content.replace(/export declare/g, "export");
-        content = content.replace(/\r?\n(.)/g, EOL + "\t$1");
-        
-        content =
-            "declare module \"" + config.pkg.name + "\" {" + EOL +
-            "\t" + content +
-            "}" + EOL;
+        // content = content.replace(/export declare/g, "export");
+        // content = content.replace(/\r?\n(.)/g, EOL + "\t$1");
+        // 
+        // content =
+        //     "declare module \"" + config.pkg.name + "\" {" + EOL +
+        //     "\t" + content +
+        //     "}" + EOL;
         
         grunt.file.write(dest, content);
         grunt.log.ok(dest + " fixed and copied!");

@@ -143,7 +143,7 @@ function wrapHandler(handler: RequestHandler, sender: AsyncRouterParamHandler): 
         next = once(next);
         toCallback(handler.call(this, req, res, next), next, result => {
             if (!res.headersSent) {
-                sender(req, res, result);
+                return sender(req, res, result);
             }
         });
     };
@@ -172,7 +172,7 @@ function wrapHandlerOrErrorHandler(handler: RequestHandler | ErrorRequestHandler
 
 function toCallback(thenable: Thenable<any>, next: Function, end?: (res) => any): void {
     if (!thenable || typeof thenable.then !== "function") {
-        return next();
+        thenable = Promise.resolve(thenable);
     }
 
     if (end) {

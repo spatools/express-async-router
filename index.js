@@ -67,7 +67,7 @@ function wrapHandler(handler, sender) {
         next = once(next);
         toCallback(handler.call(this, req, res, next), next, function (result) {
             if (!res.headersSent) {
-                sender(req, res, result);
+                return sender(req, res, result);
             }
         });
     };
@@ -92,7 +92,7 @@ function wrapHandlerOrErrorHandler(handler) {
 }
 function toCallback(thenable, next, end) {
     if (!thenable || typeof thenable.then !== "function") {
-        return next();
+        thenable = Promise.resolve(thenable);
     }
     if (end) {
         thenable = thenable.then(end);

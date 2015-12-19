@@ -65,7 +65,7 @@ function wrapMatcher(router, routerMatcher, sender) {
 function wrapHandler(handler, sender) {
     return function (req, res, next) {
         next = once(next);
-        toCallback(handler.call(this, req, res, next), next, function (result) {
+        toCallback(handler.call(this, req, res, next), next, req, res, function (result) {
             if (!res.headersSent) {
                 return sender(req, res, result);
             }
@@ -75,29 +75,33 @@ function wrapHandler(handler, sender) {
 function wrapParamHandler(handler) {
     return function (req, res, next, param) {
         next = once(next);
-        toCallback(handler.call(this, req, res, param), next);
+        toCallback(handler.call(this, req, res, param), next, req, res);
     };
 }
 function wrapHandlerOrErrorHandler(handler) {
     if (handler.length === 4) {
         return function (err, req, res, next) {
             next = once(next);
-            toCallback(handler.call(this, err, req, res, next), next);
+            toCallback(handler.call(this, err, req, res, next), next, req, res);
         };
     }
     return function (req, res, next) {
         next = once(next);
-        toCallback(handler.call(this, req, res, next), next);
+        toCallback(handler.call(this, req, res, next), next, req, res);
     };
 }
-function toCallback(thenable, next, end) {
+function toCallback(thenable, next, req, res, end) {
     if (!thenable || typeof thenable.then !== "function") {
         thenable = Promise.resolve(thenable);
     }
     if (end) {
         thenable = thenable.then(end);
     }
-    thenable.then(function () { next(); }, function (err) {
+    thenable.then(function () {
+        if (!res.headersSent) {
+            next();
+        }
+    }, function (err) {
         if (typeof err === "string") {
             err = new Error(err);
         }

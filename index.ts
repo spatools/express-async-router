@@ -141,7 +141,7 @@ function wrapMatcher(router: Router | IRoute, routerMatcher: IRouterMatcher<Rout
 function wrapHandler(handler: RequestHandler, sender: AsyncRouterParamHandler): RequestHandler {
     return function(req, res, next): void {
         next = once(next);
-        toCallback(handler.call(this, req, res, next), next, result => {
+        toCallback(handler.call(this, req, res, next), next, req, res, result => {
             if (!res.headersSent) {
                 return sender(req, res, result);
             }
@@ -152,7 +152,7 @@ function wrapHandler(handler: RequestHandler, sender: AsyncRouterParamHandler): 
 function wrapParamHandler(handler: AsyncRouterParamHandler): RequestParamHandler {
     return function(req, res, next, param): void {
         next = once(next);
-        toCallback(handler.call(this, req, res, param), next);
+        toCallback(handler.call(this, req, res, param), next, req, res);
     };
 }
 
@@ -160,17 +160,17 @@ function wrapHandlerOrErrorHandler(handler: RequestHandler | ErrorRequestHandler
     if (handler.length === 4) {
         return function(err, req, res, next): void {
             next = once(next);
-            toCallback(handler.call(this, err, req, res, next), next);
+            toCallback(handler.call(this, err, req, res, next), next, req, res);
         };
     }
 
     return function(req, res, next): void {
         next = once(next);
-        toCallback(handler.call(this, req, res, next), next);
+        toCallback(handler.call(this, req, res, next), next, req, res);
     };
 }
 
-function toCallback(thenable: Thenable<any>, next: Function, end?: (res) => any): void {
+function toCallback(thenable: Thenable<any>, next: Function, req: Request, res: Response, end?: (res) => any): void {
     if (!thenable || typeof thenable.then !== "function") {
         thenable = Promise.resolve(thenable);
     }
@@ -180,7 +180,11 @@ function toCallback(thenable: Thenable<any>, next: Function, end?: (res) => any)
     }
 
     thenable.then(
-        () => { next(); },
+        () => {
+            if (!res.headersSent) {
+                next();
+            }
+        },
         err => {
             if (typeof err === "string") {
                 err = new Error(err);

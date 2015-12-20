@@ -140,33 +140,53 @@ function wrapMatcher(router: Router | IRoute, routerMatcher: IRouterMatcher<Rout
 
 function wrapHandler(handler: RequestHandler, sender: AsyncRouterParamHandler): RequestHandler {
     return function(req, res, next): void {
-        next = once(next);
-        toCallback(handler.call(this, req, res, next), next, req, res, result => {
-            if (!res.headersSent) {
-                return sender(req, res, result);
-            }
-        });
+        try {
+            next = once(next);
+            toCallback(handler.call(this, req, res, next), next, req, res, result => {
+                if (!res.headersSent) {
+                    return sender(req, res, result);
+                }
+            });
+        }
+        catch (err) {
+            next(err);
+        }
     };
 }
 
 function wrapParamHandler(handler: AsyncRouterParamHandler): RequestParamHandler {
     return function(req, res, next, param): void {
-        next = once(next);
-        toCallback(handler.call(this, req, res, param), next, req, res);
+        try {
+            next = once(next);
+            toCallback(handler.call(this, req, res, param), next, req, res);
+        }
+        catch (err) {
+            next(err);
+        }
     };
 }
 
 function wrapHandlerOrErrorHandler(handler: RequestHandler | ErrorRequestHandler): RequestHandler | ErrorRequestHandler {
     if (handler.length === 4) {
         return function(err, req, res, next): void {
-            next = once(next);
-            toCallback(handler.call(this, err, req, res, next), next, req, res);
+            try {
+                next = once(next);
+                toCallback(handler.call(this, err, req, res, next), next, req, res);
+            }
+            catch (err) {
+                next(err);
+            }
         };
     }
 
     return function(req, res, next): void {
-        next = once(next);
-        toCallback(handler.call(this, req, res, next), next, req, res);
+        try {
+            next = once(next);
+            toCallback(handler.call(this, req, res, next), next, req, res);
+        }
+        catch (err) {
+            next(err);
+        }
     };
 }
 

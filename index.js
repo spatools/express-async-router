@@ -67,7 +67,7 @@ function wrapHandler(handler, sender) {
         try {
             next = once(next);
             toCallback(handler.call(this, req, res, next), next, req, res, function (result) {
-                if (!res.headersSent) {
+                if (sender && !res.headersSent) {
                     return sender(req, res, result);
                 }
             });

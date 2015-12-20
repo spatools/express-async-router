@@ -64,30 +64,50 @@ function wrapMatcher(router, routerMatcher, sender) {
 }
 function wrapHandler(handler, sender) {
     return function (req, res, next) {
-        next = once(next);
-        toCallback(handler.call(this, req, res, next), next, req, res, function (result) {
-            if (!res.headersSent) {
-                return sender(req, res, result);
-            }
-        });
+        try {
+            next = once(next);
+            toCallback(handler.call(this, req, res, next), next, req, res, function (result) {
+                if (!res.headersSent) {
+                    return sender(req, res, result);
+                }
+            });
+        }
+        catch (err) {
+            next(err);
+        }
     };
 }
 function wrapParamHandler(handler) {
     return function (req, res, next, param) {
-        next = once(next);
-        toCallback(handler.call(this, req, res, param), next, req, res);
+        try {
+            next = once(next);
+            toCallback(handler.call(this, req, res, param), next, req, res);
+        }
+        catch (err) {
+            next(err);
+        }
     };
 }
 function wrapHandlerOrErrorHandler(handler) {
     if (handler.length === 4) {
         return function (err, req, res, next) {
-            next = once(next);
-            toCallback(handler.call(this, err, req, res, next), next, req, res);
+            try {
+                next = once(next);
+                toCallback(handler.call(this, err, req, res, next), next, req, res);
+            }
+            catch (err) {
+                next(err);
+            }
         };
     }
     return function (req, res, next) {
-        next = once(next);
-        toCallback(handler.call(this, req, res, next), next, req, res);
+        try {
+            next = once(next);
+            toCallback(handler.call(this, req, res, next), next, req, res);
+        }
+        catch (err) {
+            next(err);
+        }
     };
 }
 function toCallback(thenable, next, req, res, end) {

@@ -143,7 +143,7 @@ function wrapHandler(handler: RequestHandler, sender: AsyncRouterParamHandler): 
         try {
             next = once(next);
             toCallback(handler.call(this, req, res, next), next, req, res, result => {
-                if (!res.headersSent) {
+                if (sender && !res.headersSent) {
                     return sender(req, res, result);
                 }
             });

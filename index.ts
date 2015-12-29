@@ -201,7 +201,7 @@ function toCallback(thenable: Thenable<any>, next: Function, req: Request, res: 
 
     thenable.then(
         () => {
-            if (!res.headersSent) {
+            if (!end && !res.headersSent) {
                 next();
             }
         },

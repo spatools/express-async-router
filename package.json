@@ -1,6 +1,6 @@
 {
   "name": "express-async-router",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Express Async Router - An Express Router wrapper which automatically manage Promise.",
   "main": "index.js",
   "license": "MIT",

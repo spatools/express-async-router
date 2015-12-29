@@ -118,7 +118,7 @@ function toCallback(thenable, next, req, res, end) {
         thenable = thenable.then(end);
     }
     thenable.then(function () {
-        if (!res.headersSent) {
+        if (!end && !res.headersSent) {
             next();
         }
     }, function (err) {

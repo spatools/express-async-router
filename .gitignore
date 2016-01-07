@@ -27,6 +27,9 @@ typings/
 *.user
 *.sln.docstates
 
+# IntelliJ
+.idea/
+
 # Logs
 *.log
 

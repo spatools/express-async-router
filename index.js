@@ -58,7 +58,8 @@ function wrapMatcher(router, routerMatcher, sender) {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        routerMatcher.call.apply(routerMatcher, [router, name].concat(args.map(function (a) { return wrapHandler(a, sender); })));
+        var last = args.length - 1, mappedArgs = args.map(function (a, i) { return i === last ? wrapHandler(a, sender) : wrapHandlerOrErrorHandler(a); });
+        routerMatcher.apply(router, [name].concat(mappedArgs));
         return _this;
     };
 }

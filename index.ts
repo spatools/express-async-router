@@ -133,8 +133,12 @@ function wrapAllMatchers(route: Router | IRoute, sender: AsyncRouterParamHandler
 
 function wrapMatcher(router: Router | IRoute, routerMatcher: IRouterMatcher<Router>, sender: AsyncRouterParamHandler): IRouterMatcher<AsyncRouterInstance> {
     return (name: any, ...args: RequestHandler[]) => {
-        routerMatcher.call(router, name, ...args.map((a, i) =>
-            i === args.length - 1 ? wrapHandler(a, sender) : wrapHandlerOrErrorHandler(a)));
+        const
+            last = args.length - 1,
+            mappedArgs = args.map((a, i) => i === last ? wrapHandler(a, sender) : wrapHandlerOrErrorHandler(a));
+
+        routerMatcher.apply(router, [name].concat(mappedArgs));
+
         return this;
     };
 }

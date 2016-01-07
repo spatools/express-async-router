@@ -93,7 +93,7 @@ export function AsyncRouter(options?: AsyncRouterOptions): AsyncRouterInstance {
 
 /** Returns a new AsyncRouter instance with default options. */
 export function create(): AsyncRouterInstance;
-/** 
+/**
  * Returns a new AsyncRouter instance with default options.
  * @param {Object} options - options to pass to express Router plus AsyncRouter options.
  */
@@ -133,7 +133,8 @@ function wrapAllMatchers(route: Router | IRoute, sender: AsyncRouterParamHandler
 
 function wrapMatcher(router: Router | IRoute, routerMatcher: IRouterMatcher<Router>, sender: AsyncRouterParamHandler): IRouterMatcher<AsyncRouterInstance> {
     return (name: any, ...args: RequestHandler[]) => {
-        routerMatcher.call(router, name, ...args.map(a => wrapHandler(a, sender)));
+        routerMatcher.call(router, name, ...args.map((a, i) =>
+            i === args.length - 1 ? wrapHandler(a, sender) : wrapHandlerOrErrorHandler(a)));
         return this;
     };
 }

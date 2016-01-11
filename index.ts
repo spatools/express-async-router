@@ -187,7 +187,7 @@ function wrapHandlerOrErrorHandler(handler: RequestHandler | ErrorRequestHandler
     return function(req, res, next): void {
         try {
             next = once(next);
-            toCallback(handler.call(this, req, res, next), next, req, res);
+            toCallback(handler.call(this, req, res, next), next, req, res, handler.length === 3);
         }
         catch (err) {
             next(err);
@@ -195,18 +195,18 @@ function wrapHandlerOrErrorHandler(handler: RequestHandler | ErrorRequestHandler
     };
 }
 
-function toCallback(thenable: Thenable<any>, next: Function, req: Request, res: Response, end?: (res) => any): void {
+function toCallback(thenable: Thenable<any>, next: Function, req: Request, res: Response, end?: boolean|((res) => any)): void {
     if (!thenable || typeof thenable.then !== "function") {
         thenable = Promise.resolve(thenable);
     }
 
-    if (end) {
+    if (typeof end === "function") {
         thenable = thenable.then(end);
     }
 
     thenable.then(
         () => {
-            if (!end && !res.headersSent) {
+            if (next && !end && !res.headersSent) {
                 next();
             }
         },

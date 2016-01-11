@@ -76,7 +76,7 @@ Or
 var router = AsyncRouter({ sender: mySender });
 
 function mySender(req, res, value) { 
-	res.render(value.template, value.data); 
+	res.rend(value.template, value.data); 
 }
 
 router.get("/", function () {
@@ -134,6 +134,8 @@ router.post("/:test", function (req) {
 A `Router.use` wrapper which automatically calls `next` function when returned `Promise` resolves.
 If returned `Promise` rejects, rejected `Error` is transfered to `next` function.
 If result is not a `Promise`, `next` function is immediatelly called.
+
+__NOTE: If you declare 3 arguments in your function, `next` will only be called when an error occured.__
 
 Examples:
 ```javascript

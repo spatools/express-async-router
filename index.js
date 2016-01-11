@@ -104,7 +104,7 @@ function wrapHandlerOrErrorHandler(handler) {
     return function (req, res, next) {
         try {
             next = once(next);
-            toCallback(handler.call(this, req, res, next), next, req, res);
+            toCallback(handler.call(this, req, res, next), next, req, res, handler.length === 3);
         }
         catch (err) {
             next(err);
@@ -115,11 +115,11 @@ function toCallback(thenable, next, req, res, end) {
     if (!thenable || typeof thenable.then !== "function") {
         thenable = Promise.resolve(thenable);
     }
-    if (end) {
+    if (typeof end === "function") {
         thenable = thenable.then(end);
     }
     thenable.then(function () {
-        if (!end && !res.headersSent) {
+        if (next && !end && !res.headersSent) {
             next();
         }
     }, function (err) {

@@ -1,6 +1,6 @@
 {
   "name": "express-async-router",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Express Async Router - An Express Router wrapper which automatically manage Promise.",
   "main": "index.js",
   "license": "MIT",
@@ -24,23 +24,7 @@
     "promise",
     "es6"
   ],
-  "scripts": {
-    "postinstall": "typings install",
-    "test": "grunt"
-  },
   "dependencies": {
     "express": "^4.0.0"
-  },
-  "devDependencies": {
-    "grunt": "^1.0.1",
-    "grunt-build-control": "^0.7.1",
-    "grunt-contrib-clean": "^1.0.0",
-    "grunt-contrib-copy": "^1.0.0",
-    "grunt-contrib-jshint": "^1.0.0",
-    "grunt-ts": "^6.0.0-beta.3",
-    "grunt-tslint": "^3.3.0",
-    "time-grunt": "^1.4.0",
-    "tslint": "^3.15.1",
-    "typescript": "^2.0.3"
   }
 }

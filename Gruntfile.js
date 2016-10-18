@@ -127,8 +127,8 @@ module.exports = function (grunt) {
     grunt.registerTask("src", ["clean:src", "tslint:src", "ts:src"]);
     grunt.registerTask("build", ["clean:dist", "tslint:src", "ts:dist", "copy:dist"]);
     
-    grunt.registerTask("default", ["build", "decla"]);
-    grunt.registerTask("publish", ["default", "buildcontrol"]);
+    grunt.registerTask("default", ["build"]);
+    grunt.registerTask("publish", ["build", "buildcontrol"]);
 
     //#endregion
 };

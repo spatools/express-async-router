@@ -10,6 +10,7 @@ typings/
 [B|b]in/
 [O|o]bj/
 [D|d]ist/
+*.tmp.txt
 
 # Development Javascript
 *.js

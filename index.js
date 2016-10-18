@@ -1,11 +1,13 @@
-/// <reference path="_references.d.ts" />
+"use strict";
 var express = require("express");
 var DEFAULT_SENDER = function (req, res, val) { res.send(val); }, SHORTCUTS_METHODS = ["all", "get", "post", "put", "delete", "patch", "options", "head"];
+var ASYNC_MARKER = typeof Symbol !== "undefined" ? Symbol("ASYNC_MARKER") : "__ASYNC_MARKER__";
 function AsyncRouter(options) {
     var sender = getSender(options), innerRouter = express.Router(options), asyncRouter = function () {
         return innerRouter.apply(this, arguments);
     };
     wrapAllMatchers(asyncRouter, sender, innerRouter);
+    asyncRouter[ASYNC_MARKER] = true;
     asyncRouter.param = function param() {
         if (typeof arguments[1] === "function" && arguments[1].length === 3) {
             innerRouter.param(arguments[0], wrapParamHandler(arguments[1]));
@@ -24,7 +26,7 @@ function AsyncRouter(options) {
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i - 0] = arguments[_i];
         }
-        innerRouter.use.apply(innerRouter, args.map(function (arg) { return typeof arg === "function" ? wrapHandlerOrErrorHandler(arg) : arg; }));
+        innerRouter.use.apply(innerRouter, args.map(function (arg) { return (typeof arg === "function" && arg[ASYNC_MARKER] !== true) ? wrapHandlerOrErrorHandler(arg) : arg; }));
         return this;
     };
     return asyncRouter;

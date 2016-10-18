@@ -66,6 +66,7 @@ export function AsyncRouter(options?: AsyncRouterOptions): AsyncRouterInstance {
 
     wrapAllMatchers(asyncRouter, sender, innerRouter);
 
+    asyncRouter.__isasync = true;
     asyncRouter.param = function param(): AsyncRouterInstance {
         if (typeof arguments[1] === "function" && arguments[1].length === 3) {
             innerRouter.param(arguments[0], wrapParamHandler(arguments[1]));
@@ -83,7 +84,7 @@ export function AsyncRouter(options?: AsyncRouterOptions): AsyncRouterInstance {
     };
 
     asyncRouter.use = function use(...args: any[]): AsyncRouterInstance {
-        innerRouter.use.apply(innerRouter, args.map(arg => typeof arg === "function" ? wrapHandlerOrErrorHandler(arg) : arg));
+        innerRouter.use.apply(innerRouter, args.map(arg => (typeof arg === "function" && arg.__isasync !== true) ? wrapHandlerOrErrorHandler(arg) : arg));
         return this;
     };
 

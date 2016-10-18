@@ -1,5 +1,3 @@
-/// <reference path="_references.d.ts" />
-
 //#region Express Members
 
 import * as express from "express";
@@ -8,11 +6,11 @@ export type Router = express.Router;
 export type Request = express.Request;
 export type Response = express.Response;
 
-export type RequestParamHandler = express.RequestParamHandler;
-export type IRouterMatcher<T> = express.IRouterMatcher<AsyncRouterInstance>;
-export type IRoute = express.IRoute;
+export type ParamHandler = express.ParamHandler;
 export type RequestHandler = express.RequestHandler;
-export type ErrorRequestHandler = express.ErrorRequestHandler;
+export type ErrorHandler = express.ErrorHandler;
+
+export type NextFunction = express.NextFunction;
 
 //#endregion
 
@@ -23,6 +21,7 @@ const
     SHORTCUTS_METHODS = ["all", "get", "post", "put", "delete", "patch", "options", "head"];
 
 export type AsyncRouterParamHandler = (req: Request, res: Response, param: any) => any;
+export type AsyncRouterSender = (req: Request, res: Response, value: any) => any;
 
 export interface AsyncRouterOptions {
     caseSensitive?: boolean;
@@ -30,7 +29,7 @@ export interface AsyncRouterOptions {
     strict?: boolean;
 
     send?: boolean;
-    sender?: AsyncRouterParamHandler;
+    sender?: AsyncRouterSender;
 }
 
 export interface AsyncRouter {
@@ -41,11 +40,11 @@ export interface AsyncRouter {
     new (options: AsyncRouterOptions): AsyncRouterInstance;
 }
 
-export interface AsyncRouterInstance extends express.IRouter<AsyncRouterInstance> {
-    param(name: string, handler: RequestParamHandler): AsyncRouterInstance;
-    param(name: string, matcher: RegExp): AsyncRouterInstance;
-    param(name: string, mapper: (param: any) => any): AsyncRouterInstance;
-    param(callback: (name: string, matcher: RegExp) => RequestParamHandler): AsyncRouterInstance;
+export interface AsyncRouterInstance extends express.Router {
+    param(name: string, handler: ParamHandler): this;
+    param(name: string, matcher: RegExp): this;
+    param(name: string, mapper: (param: any) => any): this;
+    param(callback: (name: string, matcher: RegExp) => ParamHandler): this;
 
     /** Async param function. */
     param(name: string, handler: AsyncRouterParamHandler): void;
@@ -54,6 +53,8 @@ export interface AsyncRouterInstance extends express.IRouter<AsyncRouterInstance
 //#endregion
 
 //#region Public 
+
+const ASYNC_MARKER = typeof Symbol !== "undefined" ? Symbol("ASYNC_MARKER") : "__ASYNC_MARKER__";
 
 export function AsyncRouter(options?: AsyncRouterOptions): AsyncRouterInstance {
     const
@@ -66,7 +67,7 @@ export function AsyncRouter(options?: AsyncRouterOptions): AsyncRouterInstance {
 
     wrapAllMatchers(asyncRouter, sender, innerRouter);
 
-    asyncRouter.__isasync = true;
+    asyncRouter[ASYNC_MARKER] = true;
     asyncRouter.param = function param(): AsyncRouterInstance {
         if (typeof arguments[1] === "function" && arguments[1].length === 3) {
             innerRouter.param(arguments[0], wrapParamHandler(arguments[1]));
@@ -77,14 +78,14 @@ export function AsyncRouter(options?: AsyncRouterOptions): AsyncRouterInstance {
         return this;
     };
 
-    asyncRouter.route = function route(path: string): IRoute {
+    asyncRouter.route = function route(path: string) {
         const r = innerRouter.route(path);
-        wrapAllMatchers(r, sender);
+        wrapAllMatchers(r as any, sender);
         return r;
     };
 
     asyncRouter.use = function use(...args: any[]): AsyncRouterInstance {
-        innerRouter.use.apply(innerRouter, args.map(arg => (typeof arg === "function" && arg.__isasync !== true) ? wrapHandlerOrErrorHandler(arg) : arg));
+        innerRouter.use.apply(innerRouter, args.map(arg => (typeof arg === "function" && arg[ASYNC_MARKER] !== true) ? wrapHandlerOrErrorHandler(arg) : arg));
         return this;
     };
 
@@ -107,7 +108,7 @@ export function create(options?: AsyncRouterOptions): AsyncRouterInstance {
 
 //#region Private Methods
 
-function getSender(options: AsyncRouterOptions): AsyncRouterParamHandler {
+function getSender(options: AsyncRouterOptions): AsyncRouterSender {
     if (!options) {
         return DEFAULT_SENDER;
     }
@@ -124,7 +125,7 @@ function getSender(options: AsyncRouterOptions): AsyncRouterParamHandler {
     }
 }
 
-function wrapAllMatchers(route: Router | IRoute, sender: AsyncRouterParamHandler, router?: Router): void {
+function wrapAllMatchers(route: Router, sender: AsyncRouterSender, router?: Router): void {
     router = router || route as Router;
 
     SHORTCUTS_METHODS.forEach(method => {
@@ -132,7 +133,7 @@ function wrapAllMatchers(route: Router | IRoute, sender: AsyncRouterParamHandler
     });
 }
 
-function wrapMatcher(router: Router | IRoute, routerMatcher: IRouterMatcher<Router>, sender: AsyncRouterParamHandler): IRouterMatcher<AsyncRouterInstance> {
+function wrapMatcher(router: Router, routerMatcher: Function, sender: AsyncRouterSender): Function {
     return (name: any, ...args: RequestHandler[]) => {
         const
             last = args.length - 1,
@@ -144,7 +145,7 @@ function wrapMatcher(router: Router | IRoute, routerMatcher: IRouterMatcher<Rout
     };
 }
 
-function wrapHandler(handler: RequestHandler, sender: AsyncRouterParamHandler): RequestHandler {
+function wrapHandler(handler: RequestHandler, sender: AsyncRouterSender): RequestHandler {
     return function(req, res, next): void {
         try {
             next = once(next);
@@ -160,7 +161,7 @@ function wrapHandler(handler: RequestHandler, sender: AsyncRouterParamHandler): 
     };
 }
 
-function wrapParamHandler(handler: AsyncRouterParamHandler): RequestParamHandler {
+function wrapParamHandler(handler: AsyncRouterParamHandler): ParamHandler {
     return function(req, res, next, param): void {
         try {
             next = once(next);
@@ -172,7 +173,7 @@ function wrapParamHandler(handler: AsyncRouterParamHandler): RequestParamHandler
     };
 }
 
-function wrapHandlerOrErrorHandler(handler: RequestHandler | ErrorRequestHandler): RequestHandler | ErrorRequestHandler {
+function wrapHandlerOrErrorHandler(handler: RequestHandler | ErrorHandler): RequestHandler | ErrorHandler {
     if (handler.length === 4) {
         return function(err, req, res, next): void {
             try {
@@ -196,7 +197,7 @@ function wrapHandlerOrErrorHandler(handler: RequestHandler | ErrorRequestHandler
     };
 }
 
-function toCallback(thenable: Thenable<any>, next: Function, req: Request, res: Response, end?: boolean|((res) => any)): void {
+function toCallback(thenable: PromiseLike<any>, next: Function, req: Request, res: Response, end?: boolean|((res) => any)): void {
     if (!thenable || typeof thenable.then !== "function") {
         thenable = Promise.resolve(thenable);
     }
@@ -221,7 +222,7 @@ function toCallback(thenable: Thenable<any>, next: Function, req: Request, res: 
     );
 }
 
-function once(fn: Function): Function {
+function once(fn: NextFunction): NextFunction {
     let called = false;
 
     return function() {

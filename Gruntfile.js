@@ -36,23 +36,14 @@ module.exports = function (grunt) {
             fast: "never"
         },
         src: {
-            src: ["*.ts"]
-        },
-        decla: {
-            src: "<%= ts.src.src %>",
-            dest: "<%= paths.temp %>",
-            options: {
-                rootDir: ".",
-                sourceMap: false,
-                declaration: true,
-                comments: true
-            }
+            src: ["typings/index.d.ts", "*.ts"]
         },
         dist: {
             src: "<%= ts.src.src %>",
             dest: "<%= paths.build %>",
             options: {
                 rootDir: ".",
+                declaration: true,
                 sourceMap: false
             }
         }
@@ -77,15 +68,6 @@ module.exports = function (grunt) {
     //#endregion
     
     //#region Tests 
-    
-    config.jshint = {
-        options: {
-            jshintrc: "jshint.json",
-        },
-        
-        src: ["*.js"],
-        dist: ["<%= paths.build %>/*.js"],
-    };
     
     config.tslint = {
         options: {
@@ -123,54 +105,12 @@ module.exports = function (grunt) {
     //#region Cleanup
     
     config.clean = {
-        temp: "<%= paths.temp %>/",
         dist: "<%= paths.build %>/",
         src: [
             "*.{js,js.map}",
             "!Gruntfile.js"
         ]
     };
-    
-    //#endregion
-    
-    //#region Fix Declaration
-    
-    grunt.registerTask("fix-declaration", function() {
-        var /*EOL = require("os").EOL,*/
-            source = config.paths.temp + "/index.d.ts",
-            dest = config.paths.build + "/index.d.ts",
-            content = grunt.file.read(source);
-            
-        content = content.replace(/\/\/\/\s*<reference path="..\/_references.d.ts" \/>\r?\n/, "");
-        // content = content.replace(/export declare/g, "export");
-        // content = content.replace(/\r?\n(.)/g, EOL + "\t$1");
-        // 
-        // content =
-        //     "declare module \"" + config.pkg.name + "\" {" + EOL +
-        //     "\t" + content +
-        //     "}" + EOL;
-        
-        grunt.file.write(dest, content);
-        grunt.log.ok(dest + " fixed and copied!");
-    });
-    
-    //#endregion
-    
-    //#region Setup
-    
-    grunt.registerTask("setup", function () {
-        var os = require("os"),
-            tsd = os.platform() == "win32" ? "tsd.cmd" : "tsd",
-            result = require("child_process").spawnSync(tsd, ["reinstall", "-overwrite"]);
-            
-        if (result.error) {
-            grunt.log.error("An error occured during grunt setup, are you sure tsd is installed ?");
-            grunt.fail.fatal(result.error);
-        }
-            
-        grunt.verbose.writeln(result.output);
-        grunt.log.ok("Setup successfully applied!");
-    });
     
     //#endregion
     
@@ -181,13 +121,11 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-build-control");
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-contrib-copy");
-    grunt.loadNpmTasks("grunt-contrib-jshint");
     grunt.loadNpmTasks("grunt-ts");
     grunt.loadNpmTasks("grunt-tslint");
     
-    grunt.registerTask("src", ["clean:src", "tslint:src", "ts:src", "jshint:src"]);
-    grunt.registerTask("build", ["clean:dist", "tslint:src", "ts:dist", "copy:dist", "jshint:dist"]);
-    grunt.registerTask("decla", ["clean:temp", "ts:decla", "fix-declaration"]);
+    grunt.registerTask("src", ["clean:src", "tslint:src", "ts:src"]);
+    grunt.registerTask("build", ["clean:dist", "tslint:src", "ts:dist", "copy:dist"]);
     
     grunt.registerTask("default", ["build", "decla"]);
     grunt.registerTask("publish", ["default", "buildcontrol"]);

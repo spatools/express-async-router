@@ -68,10 +68,12 @@ If set, it will override the default `AsyncRouter` `sender` function.
 
 
 Examples:
+
 ```javascript
 var router = AsyncRouter({ send: false });
 ```
 Or
+
 ```javascript
 var router = AsyncRouter({ sender: mySender });
 

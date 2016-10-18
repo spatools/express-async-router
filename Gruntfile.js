@@ -58,12 +58,22 @@ module.exports = function (grunt) {
             files: [
                 {
                     expand: true,
-                    src: ["package.json", "README.md"],
+                    src: ["README.md"],
                     dest: "<%= paths.build %>"
                 }
             ]
         }
     };
+    
+    grunt.registerTask("packagejson", "", function () {
+        var pkg = grunt.file.readJSON("package.json");
+
+        delete pkg.scripts;
+        delete pkg.devDependencies;
+        delete pkg.optionalDependencies;
+
+        grunt.file.write(config.paths.build + "/package.json", JSON.stringify(pkg, null, 2));
+    });
     
     //#endregion
     
@@ -125,7 +135,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-tslint");
     
     grunt.registerTask("src", ["clean:src", "tslint:src", "ts:src"]);
-    grunt.registerTask("build", ["clean:dist", "tslint:src", "ts:dist", "copy:dist"]);
+    grunt.registerTask("build", ["clean:dist", "tslint:src", "ts:dist", "copy:dist", "packagejson"]);
     
     grunt.registerTask("default", ["build"]);
     grunt.registerTask("publish", ["build", "buildcontrol"]);

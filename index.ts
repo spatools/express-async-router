@@ -6,9 +6,11 @@ export type Router = express.Router;
 export type Request = express.Request;
 export type Response = express.Response;
 
-export type ParamHandler = express.ParamHandler;
 export type RequestHandler = express.RequestHandler;
-export type ErrorHandler = express.ErrorHandler;
+export type RequestParamHandler = express.RequestParamHandler;
+export type ErrorRequestHandler = express.ErrorRequestHandler;
+export type ParamHandler = RequestParamHandler;
+export type ErrorHandler = ErrorRequestHandler;
 
 export type NextFunction = express.NextFunction;
 
@@ -36,8 +38,8 @@ export interface AsyncRouter {
     (): AsyncRouterInstance;
     (options: AsyncRouterOptions): AsyncRouterInstance;
 
-    new (): AsyncRouterInstance;
-    new (options: AsyncRouterOptions): AsyncRouterInstance;
+    new(): AsyncRouterInstance;
+    new(options: AsyncRouterOptions): AsyncRouterInstance;
 }
 
 export interface AsyncRouterInstance extends express.Router {
@@ -52,7 +54,7 @@ export interface AsyncRouterInstance extends express.Router {
 
 //#endregion
 
-//#region Public 
+//#region Public
 
 const ASYNC_MARKER = typeof Symbol !== "undefined" ? Symbol("ASYNC_MARKER") : "__ASYNC_MARKER__";
 
@@ -61,7 +63,7 @@ export function AsyncRouter(options?: AsyncRouterOptions): AsyncRouterInstance {
         sender = getSender(options),
         innerRouter = express.Router(options),
 
-        asyncRouter: AsyncRouterInstance = function() {
+        asyncRouter: AsyncRouterInstance = function () {
             return innerRouter.apply(this, arguments);
         } as any;
 
@@ -146,7 +148,7 @@ function wrapMatcher(router: Router, routerMatcher: Function, sender: AsyncRoute
 }
 
 function wrapHandler(handler: RequestHandler, sender: AsyncRouterSender): RequestHandler {
-    return function(req, res, next): void {
+    return function (req, res, next): void {
         try {
             next = once(next);
             toCallback(handler.call(this, req, res, next), next, req, res, result => {
@@ -162,7 +164,7 @@ function wrapHandler(handler: RequestHandler, sender: AsyncRouterSender): Reques
 }
 
 function wrapParamHandler(handler: AsyncRouterParamHandler): ParamHandler {
-    return function(req, res, next, param): void {
+    return function (req, res, next, param): void {
         try {
             next = once(next);
             toCallback(handler.call(this, req, res, param), next, req, res);
@@ -175,7 +177,7 @@ function wrapParamHandler(handler: AsyncRouterParamHandler): ParamHandler {
 
 function wrapHandlerOrErrorHandler(handler: RequestHandler | ErrorHandler): RequestHandler | ErrorHandler {
     if (handler.length === 4) {
-        return function(err, req, res, next): void {
+        return function (err, req, res, next): void {
             try {
                 next = once(next);
                 toCallback(handler.call(this, err, req, res, next), next, req, res);
@@ -186,7 +188,7 @@ function wrapHandlerOrErrorHandler(handler: RequestHandler | ErrorHandler): Requ
         };
     }
 
-    return function(req, res, next): void {
+    return function (req, res, next): void {
         try {
             next = once(next);
             toCallback(handler.call(this, req, res, next), next, req, res, handler.length === 3);
@@ -197,7 +199,7 @@ function wrapHandlerOrErrorHandler(handler: RequestHandler | ErrorHandler): Requ
     };
 }
 
-function toCallback(thenable: PromiseLike<any>, next: Function, req: Request, res: Response, end?: boolean|((res) => any)): void {
+function toCallback(thenable: PromiseLike<any>, next: Function, req: Request, res: Response, end?: boolean | ((res) => any)): void {
     if (!thenable || typeof thenable.then !== "function") {
         thenable = Promise.resolve(thenable);
     }
@@ -225,7 +227,7 @@ function toCallback(thenable: PromiseLike<any>, next: Function, req: Request, re
 function once(fn: NextFunction): NextFunction {
     let called = false;
 
-    return function() {
+    return function () {
         if (called) {
             return;
         }

@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var express = require("express");
 var DEFAULT_SENDER = function (req, res, val) { res.send(val); }, SHORTCUTS_METHODS = ["all", "get", "post", "put", "delete", "patch", "options", "head"];
 var ASYNC_MARKER = typeof Symbol !== "undefined" ? Symbol("ASYNC_MARKER") : "__ASYNC_MARKER__";
@@ -24,7 +25,7 @@ function AsyncRouter(options) {
     asyncRouter.use = function use() {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i - 0] = arguments[_i];
+            args[_i] = arguments[_i];
         }
         innerRouter.use.apply(innerRouter, args.map(function (arg) { return (typeof arg === "function" && arg[ASYNC_MARKER] !== true) ? wrapHandlerOrErrorHandler(arg) : arg; }));
         return this;

@@ -1,10 +1,13 @@
+/// <reference types="express" />
 import * as express from "express";
 export declare type Router = express.Router;
 export declare type Request = express.Request;
 export declare type Response = express.Response;
-export declare type ParamHandler = express.ParamHandler;
 export declare type RequestHandler = express.RequestHandler;
-export declare type ErrorHandler = express.ErrorHandler;
+export declare type RequestParamHandler = express.RequestParamHandler;
+export declare type ErrorRequestHandler = express.ErrorRequestHandler;
+export declare type ParamHandler = RequestParamHandler;
+export declare type ErrorHandler = ErrorRequestHandler;
 export declare type NextFunction = express.NextFunction;
 export declare type AsyncRouterParamHandler = (req: Request, res: Response, param: any) => any;
 export declare type AsyncRouterSender = (req: Request, res: Response, value: any) => any;

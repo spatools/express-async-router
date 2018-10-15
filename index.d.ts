@@ -1,4 +1,3 @@
-/// <reference types="express" />
 import * as express from "express";
 export declare type Router = express.Router;
 export declare type Request = express.Request;

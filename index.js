@@ -27,7 +27,15 @@ function AsyncRouter(options) {
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i] = arguments[_i];
         }
-        innerRouter.use.apply(innerRouter, args.map(function (arg) { return (typeof arg === "function" && arg[ASYNC_MARKER] !== true) ? wrapHandlerOrErrorHandler(arg) : arg; }));
+        innerRouter.use.apply(innerRouter, args.map(function (arg) {
+            if (Array.isArray(arg)) {
+                return arg.map(function (a) { return isHandlerOrErrorHandler(a) ? wrapHandlerOrErrorHandler(a) : a; });
+            }
+            if (isHandlerOrErrorHandler(arg)) {
+                return wrapHandlerOrErrorHandler(arg);
+            }
+            return arg;
+        }));
         return this;
     };
     return asyncRouter;
@@ -61,7 +69,18 @@ function wrapMatcher(router, routerMatcher, sender) {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        var last = args.length - 1, mappedArgs = args.map(function (a, i) { return i === last ? wrapHandler(a, sender) : wrapHandlerOrErrorHandler(a); });
+        var last = args.length - 1, mappedArgs = args.map(function (arg, i) {
+            if (i === last) {
+                return wrapHandler(arg, sender);
+            }
+            if (Array.isArray(arg)) {
+                return arg.map(function (a) { return isHandlerOrErrorHandler(a) ? wrapHandlerOrErrorHandler(a) : a; });
+            }
+            if (isHandlerOrErrorHandler(arg)) {
+                return wrapHandlerOrErrorHandler(arg);
+            }
+            return arg;
+        });
         routerMatcher.apply(router, [name].concat(mappedArgs));
         return _this;
     };
@@ -131,6 +150,9 @@ function toCallback(thenable, next, req, res, end) {
         }
         next(err);
     });
+}
+function isHandlerOrErrorHandler(handler) {
+    return typeof handler === "function" && handler[ASYNC_MARKER] !== true;
 }
 function once(fn) {
     var called = false;

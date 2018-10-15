@@ -87,7 +87,18 @@ export function AsyncRouter(options?: AsyncRouterOptions): AsyncRouterInstance {
     };
 
     asyncRouter.use = function use(...args: any[]): AsyncRouterInstance {
-        innerRouter.use.apply(innerRouter, args.map(arg => (typeof arg === "function" && arg[ASYNC_MARKER] !== true) ? wrapHandlerOrErrorHandler(arg) : arg));
+        innerRouter.use.apply(innerRouter, args.map(arg => {
+            if (Array.isArray(arg)) {
+                return arg.map(a => isHandlerOrErrorHandler(a) ? wrapHandlerOrErrorHandler(a) : a);
+            }
+
+            if (isHandlerOrErrorHandler(arg)) {
+                return wrapHandlerOrErrorHandler(arg);
+            }
+
+            return arg;
+        }));
+
         return this;
     };
 
@@ -139,7 +150,21 @@ function wrapMatcher(router: Router, routerMatcher: Function, sender: AsyncRoute
     return (name: any, ...args: RequestHandler[]) => {
         const
             last = args.length - 1,
-            mappedArgs = args.map((a, i) => i === last ? wrapHandler(a, sender) : wrapHandlerOrErrorHandler(a));
+            mappedArgs = args.map((arg, i) => {
+                if (i === last) {
+                    return wrapHandler(arg, sender);
+                }
+
+                if (Array.isArray(arg)) {
+                    return arg.map(a => isHandlerOrErrorHandler(a) ? wrapHandlerOrErrorHandler(a) : a);
+                }
+
+                if (isHandlerOrErrorHandler(arg)) {
+                    return wrapHandlerOrErrorHandler(arg);
+                }
+
+                return arg;
+            });
 
         routerMatcher.apply(router, [name].concat(mappedArgs));
 
@@ -222,6 +247,10 @@ function toCallback(thenable: PromiseLike<any>, next: Function, req: Request, re
             next(err);
         }
     );
+}
+
+function isHandlerOrErrorHandler(handler: any): handler is RequestHandler | ErrorHandler {
+    return typeof handler === "function" && handler[ASYNC_MARKER] !== true;
 }
 
 function once(fn: NextFunction): NextFunction {
